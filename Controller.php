@@ -2178,10 +2178,6 @@ class Controller extends \MapasCulturais\Controllers\Registration
         //Verifica a extenção do arquivo
         $ext = pathinfo($filename, PATHINFO_EXTENSION);
 
-        if ($ext != "csv") {
-            throw new Exception("Arquivo não permitido.");
-        }
-
         //Verifica se o arquivo esta dentro layout
         foreach ($header_temp as $key => $value) {
             $header_file[] = $value;

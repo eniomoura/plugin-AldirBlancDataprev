@@ -26,9 +26,29 @@ class Plugin extends \AldirBlanc\PluginValidador
         $app = App::i();
 
         $plugin = $app->plugins['AldirBlanc'];
+        $plugin_validador = $this;
+
+        $user = $this->getUser();
+
+        $app->hook('opportunity.registrations.reportCSV', function($opportunity, $registrations, &$header, &$body) use($app, $user) {
+            
+            $_evaluations = $app->repo('RegistrationEvaluation')->findBy(['user' => $user, 'registration' => $registrations]);
+
+            $evaluations = [];
+            foreach($_evaluations as $eval) {
+                $evaluations[$eval->registration->number] = $eval->evaluationData->obs;
+            }
+
+
+            $header[] = 'Dataprev';
+            
+            foreach($body as $i => $line){
+                $body[$i][] = $evaluations[$line[0]] ?? null;
+            }
+        });
 
         //botao de export csv
-        $app->hook('template(opportunity.single.header-inscritos):end', function () use($plugin, $app){
+        $app->hook('template(opportunity.single.header-inscritos):end', function () use($plugin, $app, $plugin_validador){
             $inciso1Ids = [$plugin->config['inciso1_opportunity_id']];
             $inciso2Ids = array_values($plugin->config['inciso2_opportunity_ids']);
             $inciso3Ids = is_array($plugin->config['inciso3_opportunity_ids']) ? $plugin->config['inciso3_opportunity_ids'] : [];
@@ -50,7 +70,8 @@ class Plugin extends \AldirBlanc\PluginValidador
                     $inciso = 3;
 
                 }
-                $this->part('aldirblanc/csv-button', ['inciso' => $inciso, 'opportunity' => $opportunity]);
+                
+                $this->part('aldirblanc/csv-button', ['inciso' => $inciso, 'opportunity' => $opportunity, 'plugin_validador' => $plugin_validador]);
             }
         });
 
@@ -96,7 +117,7 @@ class Plugin extends \AldirBlanc\PluginValidador
             'default_value' => '{}'
         ]);
 
-        $file_group_definition = new \MapasCulturais\Definitions\FileGroup('dataprev', ['^text/csv$'], 'O arquivo enviado não é um csv.',false,null,true);
+        $file_group_definition = new \MapasCulturais\Definitions\FileGroup('dataprev', ['^application/octet-stream$'], 'O arquivo enviado não é um csv.',false,null,true);
         $app->registerFileGroup('opportunity', $file_group_definition);
 
         parent::register();

@@ -2430,6 +2430,9 @@ class Controller extends \MapasCulturais\Controllers\Registration
             $count++;
 
             $registration = $app->repo('Registration')->findOneBy(['number' => $r['N_INSCRICAO']]);
+            if (!$registration){
+                continue;
+            }
             $registration->__skipQueuingPCacheRecreation = true;
             
             if ($registration->dataprev_raw != (object) []) {

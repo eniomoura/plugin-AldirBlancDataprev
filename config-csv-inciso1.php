@@ -99,7 +99,7 @@ return [ //Configuração dos campos
         'humanidades' => [
             'Literatura',
         ],
-     ],
+    ],
     'herder_layout' => [ // Header padronizado segundo instruções do documento dataprev
         'REQUERENTE_CPF',
         'REQUERENTE_NOME',

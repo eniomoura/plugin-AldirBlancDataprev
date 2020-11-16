@@ -68,14 +68,38 @@ return [ //Configuração dos campos
         "status" => '1',
     ],
     'atuacoes-culturais' => [ // Opções para área de atuações culturais
-        'artes-cenicas' => [],
-        'audiovisual' => [],
-        'musica' => [],
-        'artes-visuais' => [],
-        'patrimonio-cultural' => [],
-        'museu-memoria' => [],
-        'humanidades' => [],
-    ],
+        'artes-cenicas' => [
+            'Artes Circenses',
+            'Dança:Artes da Dança',
+            'Teatro:Artes do Teatro',
+            'Ópera',
+        ],
+        'musica' => [
+            'Música',
+        ],
+        'audiovisual' => [
+            'Audiovisual',
+        ],
+        'artes-visuais' => [
+            'Artes Visuais',
+            'Artesanato',
+            'Design',
+            'Fotografia',
+            'Moda',
+        ],
+        'patrimonio-cultural' => [
+            'Cultura Popular',
+            'Gastronomia',
+            'Outros:Outro segmento cultural',
+            'Patrimônio Cultural',
+        ],    
+        'museu-memoria' => [
+            'Museu:Museu e Memória',
+        ],
+        'humanidades' => [
+            'Literatura',
+        ],
+     ],
     'herder_layout' => [ // Header padronizado segundo instruções do documento dataprev
         'REQUERENTE_CPF',
         'REQUERENTE_NOME',

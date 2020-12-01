@@ -50,12 +50,13 @@ class Controller extends \MapasCulturais\Controllers\Registration
         foreach ($registrations as $registration) {
             $dataprev_validation = $app->repo('RegistrationEvaluation')->findBy(['registration' => $registration, 'user' => $user]);
             $recurso = $validador_recurso ? 
-                $app->repo('RegistrationEvaluation')->findBy(['registration' => $registration, 'user' => $validador_recurso, 'result' => '10']) :
+                $app->repo('RegistrationEvaluation')->findBy(['registration' => $registration, 'user' => $validador_recurso, 'result' => ['10', 'homogada por recurso']]) :
                 null;
+            
 
-            if($recurso || !$dataprev_validation){
+            if(!$dataprev_validation && ($recurso || $registration->status == '1')){
                 if ($this->config['exportador_requer_homologacao']) {
-                    if (in_array($registration->consolidatedResult, ['10', 'homologado']) ) {
+                    if (in_array($registration->consolidatedResult, ['10', 'homologado', 'homogada por recurso']) ) {
                         $_regs[] = $registration;
                     }
                 } else {
@@ -152,7 +153,7 @@ class Controller extends \MapasCulturais\Controllers\Registration
          * @var int $opportunity_id
          * @var array $key_registrations
          */
-        if ($getdata) { //caso existe data como parâmetro, ele pega os registros do range de data selecionada com satatus 1
+        if ($getdata) { //caso existe data como parâmetro, ele pega os registros do range de data selecionada com status maior que zero
             $dql = "
             SELECT
                 e
@@ -161,7 +162,7 @@ class Controller extends \MapasCulturais\Controllers\Registration
             WHERE
                 e.sentTimestamp >=:startDate AND
                 e.sentTimestamp <= :finishDate AND
-                e.status = :status AND
+                e.status > 0 AND
                 e.opportunity = :opportunity_Id";
 
             $query = $app->em->createQuery($dql);
@@ -169,25 +170,23 @@ class Controller extends \MapasCulturais\Controllers\Registration
             $conditions = $query->setParameters([
                 'opportunity_Id' => $opportunity_id,
                 'startDate' => $startDate,
-                'finishDate' => $finishDate,
-                'status' => $status,
+                'finishDate' => $finishDate
             ]);
             $registrations = $query->getResult();
-        } else { //Se não exister data como parâmetro, ele retorna todos os registros com status 1
+        } else { //Se não exister data como parâmetro, ele retorna todos os registros com maior que zero
             $dql = "
             SELECT
                 e
             FROM
                 MapasCulturais\Entities\Registration e
             WHERE
-                e.status = :status AND
+                e.status > 0 AND
                 e.opportunity = :opportunity_Id";
 
             $query = $app->em->createQuery($dql);
 
             $conditions = $query->setParameters([
                 'opportunity_Id' => $opportunity_id,
-                'status' => $status,
             ]);
             
             $registrations = $query->getResult();
@@ -244,7 +243,8 @@ class Controller extends \MapasCulturais\Controllers\Registration
         $fields = [
             "CPF" => function ($registrations) use ($csv_conf) {
                 $field_id = $csv_conf["CPF"];
-                return str_replace(['.', '-'], '', $registrations->$field_id);
+                $result = str_replace(['.', '-'], '', $registrations->$field_id);
+                return preg_replace('/[^0-9]/i', '', $result);
 
             },
             'SEXO' => function ($registrations) use ($csv_conf) {
@@ -822,7 +822,8 @@ class Controller extends \MapasCulturais\Controllers\Registration
             $fields_cpf_ = [
                 'CPF' => function ($registrations) use ($fields_cpf) {
                     $field_id = $fields_cpf['CPF'];
-                    return str_replace(['.', '-'], '', $registrations->$field_id);
+                    $result = str_replace(['.', '-'], '', $registrations->$field_id);
+                    return preg_replace('/[^0-9]/i', '', $result);
 
                 },
                 'SEXO' => function ($registrations) use ($fields_cpf) {
@@ -858,7 +859,7 @@ class Controller extends \MapasCulturais\Controllers\Registration
 
                     }
 
-                    return $result;
+                    return $this->normalizeString(trim($result));
                 },
                 'FLAG_CAD_ESTADUAL' => function ($registrations) use ($fields_cpf, $inscricoes) {
                     $field_id = $fields_cpf["FLAG_CAD_ESTADUAL"];
@@ -1268,10 +1269,11 @@ class Controller extends \MapasCulturais\Controllers\Registration
                         $field_id = $field_temp;
                     }
                     if ($field_id){
-                        return str_replace(['.', '-', '/'], '', $registrations->$field_id);
+                        $result =  str_replace(['.', '-', '/'], '', $registrations->$field_id);
                     } else {
-                        return null;
+                        $result = null;
                     }
+                    return preg_replace('/[^0-9]/i', '', $result);
 
                 }, 'FLAG_CAD_ESTADUAL' => function ($registrations) use ($fields_cnpj, $inscricoes) {
                     $field_id = $fields_cnpj["FLAG_CAD_ESTADUAL"];
@@ -2820,7 +2822,7 @@ class Controller extends \MapasCulturais\Controllers\Registration
     private function normalizeString($value): string
     {
         $value = Normalizer::normalize($value, Normalizer::FORM_D);
-       return preg_replace('/[^a-z0-9 ]/i', '', $value);
+       return preg_replace('/[^A-Za-z0-9 ]/i', '', $value);
     }
 
     /**

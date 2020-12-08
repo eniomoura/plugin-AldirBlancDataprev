@@ -19,13 +19,13 @@ return [
             'II)  Audiovisual',
             'II) Audiovisual',
             'III) Audiovisual',
+            'IX) Tecnologia',
         ],
         'artes-visuais' => [
             'I)  Artesanato',
             'I) Artes Visuais',
             'I)   Artes Visuais',
             'II) Artes Visuais',
-            'IX) Tecnologia',
             'IX)   Design',
             'X)   Fotografia',
             'VIII)   Moda',
@@ -116,7 +116,7 @@ return [
         '90' => [
             'NUMERO_INSTRUMENTO' => '90',
             'CPF' => 'field_4015',
-            // 'SEXO' => 'csvMap',
+            'SEXO' => 'csvMap',
             'CNPJ' => 'field_4014',
             'FLAG_CAD_ESTADUAL' => 1,            
             'FLAG_CAD_MUNICIPAL' => 0,            

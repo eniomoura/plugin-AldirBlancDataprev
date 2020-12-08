@@ -2064,8 +2064,8 @@ class Controller extends \MapasCulturais\Controllers\Registration
                 return '';
 
             },
-            "FLAG_ATUACAO_ARTES_CENICAS" => function ($registrations) use ($opp, $app){  
-                $options = $opp['atuacoes-culturais']['artes-cenicas'];
+            "FLAG_ATUACAO_ARTES_CENICAS" => function ($registrations) use ($csv_config, $app){  
+                $options = $csv_config['atuacoes-culturais']['artes-cenicas'];
                 $temp = (array) $registrations->category;
 
                 $result = 0;
@@ -2077,8 +2077,8 @@ class Controller extends \MapasCulturais\Controllers\Registration
 
                 return $result;
             },
-            "FLAG_ATUACAO_AUDIOVISUAL" => function ($registrations) use ($opp, $app){  
-                $options = $opp['atuacoes-culturais']['audiovisual'];
+            "FLAG_ATUACAO_AUDIOVISUAL" => function ($registrations) use ($csv_config, $app){  
+                $options = $csv_config['atuacoes-culturais']['audiovisual'];
                 $temp = (array) $registrations->category;
 
                 $result = 0;
@@ -2090,8 +2090,8 @@ class Controller extends \MapasCulturais\Controllers\Registration
 
                 return $result;
             },
-            "FLAG_ATUACAO_MUSICA" => function ($registrations) use ($opp, $app){  
-                $options = $opp['atuacoes-culturais']['musica'];
+            "FLAG_ATUACAO_MUSICA" => function ($registrations) use ($csv_config, $app){  
+                $options = $csv_config['atuacoes-culturais']['musica'];
                 $temp = (array) $registrations->category;
 
                 $result = 0;
@@ -2103,10 +2103,8 @@ class Controller extends \MapasCulturais\Controllers\Registration
 
                 return $result;
             },
-            "FLAG_ATUACAO_ARTES_VISUAIS" => function ($registrations) use ($opp, $app){  
-                $field_id = $opp["FLAG_ATUACAO_MUSICA"];
-
-                $options = $opp['atuacoes-culturais']['artes-visuais'];
+            "FLAG_ATUACAO_ARTES_VISUAIS" => function ($registrations) use ($csv_config, $app){  
+                $options = $csv_config['atuacoes-culturais']['artes-visuais'];
                 $temp = (array) $registrations->category;
 
                 $result = 0;
@@ -2118,8 +2116,8 @@ class Controller extends \MapasCulturais\Controllers\Registration
 
                 return $result;
             },
-            "FLAG_ATUACAO_PATRIMONIO_CULTURAL" => function ($registrations) use ($opp, $app){  
-                $options = $opp['atuacoes-culturais']['patrimonio-cultural'];
+            "FLAG_ATUACAO_PATRIMONIO_CULTURAL" => function ($registrations) use ($csv_config, $app){  
+                $options = $csv_config['atuacoes-culturais']['patrimonio-cultural'];
                 $temp = (array) $registrations->category;
 
                 $result = 0;
@@ -2130,8 +2128,8 @@ class Controller extends \MapasCulturais\Controllers\Registration
                 }
                 return $result;
             },
-            "FLAG_ATUACAO_MUSEUS_MEMORIA" => function ($registrations) use ($opp, $app){  
-                $options = $opp['atuacoes-culturais']['museu-memoria'];
+            "FLAG_ATUACAO_MUSEUS_MEMORIA" => function ($registrations) use ($csv_config, $app){  
+                $options = $csv_config['atuacoes-culturais']['museu-memoria'];
                 $temp = (array) $registrations->category;
 
                 $result = 0;
@@ -2142,8 +2140,8 @@ class Controller extends \MapasCulturais\Controllers\Registration
                 }
                 return $result;
             },
-            "FLAG_ATUACAO_HUMANIDADES" => function ($registrations) use ($opp, $app){  
-                $options = $opp['atuacoes-culturais']['humanidades'];
+            "FLAG_ATUACAO_HUMANIDADES" => function ($registrations) use ($csv_config, $app){  
+                $options = $csv_config['atuacoes-culturais']['humanidades'];
                 $temp = (array) $registrations->category;
 
                 $result = 0;

@@ -116,7 +116,7 @@ return [
         '90' => [
             'NUMERO_INSTRUMENTO' => '90',
             'CPF' => 'field_4015',
-            'SEXO' => 'csvMap',
+            'SEXO' => 'NULL',
             'CNPJ' => 'field_4014',
             'FLAG_CAD_ESTADUAL' => 1,            
             'FLAG_CAD_MUNICIPAL' => 0,            

@@ -81,7 +81,7 @@ return [
         'FLAG_ATUACAO_HUMANIDADES'
     ],
     "parameters_csv_default" => [
-        "status" => '1'
+        "status" => '10'
     ],
     'opportunities' => [
         // '80' => [

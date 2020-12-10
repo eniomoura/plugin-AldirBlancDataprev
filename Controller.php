@@ -1969,69 +1969,80 @@ class Controller extends \MapasCulturais\Controllers\Registration
         
         $mapping = [
             'TIPO_INSTRUMENTO' => '1',
-            'NUMERO_INSTRUMENTO' => '24',
+            'NUMERO_INSTRUMENTO' => function($registrations) use ($opp, $app){
+                return $opp['NUMERO_INSTRUMENTO'];
+            },
             'ANO_INSTRUMENTO' => '2020',
             'CPF' => function($registrations) use ($opp, $app){
-                $field_temp = $opp['TIPO_PROPONENTE'];
+                // $field_temp = $opp['TIPO_PROPONENTE'];
                 $field_id = $opp['CPF'];
-                if($field_temp){
+                // if($field_temp){
                     
-                    if(trim($registrations->$field_temp) === trim($opp['PESSOA_FISICA']) || trim($registrations->$field_temp) === trim($opp['COLETIVO'])){
-                        $result = $this->normalizeString(str_pad($registrations->$field_id, 11, 0));
-                        return substr($result, 0, 11);
-                    }else{
-                        return null;
-                    }
-                }else{ 
+                //     if(trim($registrations->$field_temp) === trim($opp['PESSOA_FISICA']) || trim($registrations->$field_temp) === trim($opp['COLETIVO'])){
+                //         $result = $this->normalizeString(str_pad($registrations->$field_id, 11, 0));
+                //         return substr($result, 0, 11);
+                //     }else{
+                //         return null;
+                //     }
+                // }else{ 
+                if($registrations->$field_id){
                     $result = $this->normalizeString(str_pad($registrations->$field_id, 11, 0));
                     return substr($result, 0, 11);
+                }else{
+                    return null;
                 }
                 
             },
             'SEXO' => function($registrations) use ($opp, $app, $opportunities){                
-                $field_temp = $opp['TIPO_PROPONENTE'];
-                $field_id = $opp['SEXO'];
-                    if($field_id == 'csvMap'){
-                            $filename = PRIVATE_FILES_PATH.'LAB/csv/'. $opp['DIR_CSV'];
+                // $field_temp = $opp['TIPO_PROPONENTE'];
+                // $field_id = $opp['SEXO'];
+                //     if($field_id == 'csvMap'){
+                //             $filename = PRIVATE_FILES_PATH.'LAB/csv/'. $opp['DIR_CSV'];
 
-                            $stream = fopen($filename, "r");
+                //             $stream = fopen($filename, "r");
 
-                            $csv = Reader::createFromStream($stream);
+                //             $csv = Reader::createFromStream($stream);
 
-                            $csv->setDelimiter(";");
+                //             $csv->setDelimiter(";");
 
-                            $header_temp = $csv->setHeaderOffset(0);
+                //             $header_temp = $csv->setHeaderOffset(0);
 
-                            $stmt = (new Statement());
-                            $results = $stmt->process($csv);
+                //             $stmt = (new Statement());
+                //             $results = $stmt->process($csv);
                                                    
-                            foreach($results as $key_a => $a){
+                //             foreach($results as $key_a => $a){
                                 
-                                foreach($a as $key => $b){
+                //                 foreach($a as $key => $b){
                                     
-                                    if($a['NUM_INSCRICAO'] === $registrations->number){
+                //                     if($a['NUM_INSCRICAO'] === $registrations->number){
                                         
-                                        return $this->normalizeString($a['SEXO']);
-                                    }
-                                }
-                            }
-                        }else{                            
-                            return $this->normalizeString($registrations->$field_id);
-                        }
+                //                         return $this->normalizeString($a['SEXO']);
+                //                     }
+                //                 }
+                //             }
+                //         }else{                            
+                //             return $this->normalizeString($registrations->$field_id);
+                //         }
+                return $opp['SEXO'];
             },
             'CNPJ' => function($registrations) use ($opp, $app){
-                $field_temp = $opp['TIPO_PROPONENTE'];
+                // $field_temp = $opp['TIPO_PROPONENTE'];
                 $field_id = $opp['CNPJ'];
-                if($field_temp){
-                    if(trim($registrations->$field_temp) == trim($opp['PESSOA_JURIDICA'])){
-                        $result = $this->normalizeString(str_pad($registrations->$field_id, 14, 0));
-                        return substr($result, 0, 14);
-                    }else{
-                        return null;
-                    }
+                // if($field_temp){
+                //     if(trim($registrations->$field_temp) == trim($opp['PESSOA_JURIDICA'])){
+                //         $result = $this->normalizeString(str_pad($registrations->$field_id, 14, 0));
+                //         return substr($result, 0, 14);
+                //     }else{
+                //         return null;
+                //     }
+                // }else{
+                if($registrations->$field_id){
+                    $result = $this->normalizeString(str_pad($registrations->$field_id, 11, 0));
+                    return substr($result, 0, 11);
                 }else{
-                    //return $this->normalizeString($registrations->$field_id);
+                    return null;
                 }
+                
             },
             'FLAG_CAD_ESTADUAL' => function($registrations) use ($opp, $app){                    
                 return $opp['FLAG_CAD_ESTADUAL'] ? 1 : 0;
@@ -2115,34 +2126,95 @@ class Controller extends \MapasCulturais\Controllers\Registration
                 return '';
 
             },
-            'FLAG_ATUACAO_ARTES_CENICAS' => function($registrations) use ($opp, $app){                    
-                return 0;
+            "FLAG_ATUACAO_ARTES_CENICAS" => function ($registrations) use ($csv_config, $app){  
+                $options = $csv_config['atuacoes-culturais']['artes-cenicas'];
+                $temp = (array) $registrations->category;
 
+                $result = 0;
+                foreach ($options as $value) {
+                    if (in_array($value, $temp)) {
+                        $result = 1;
+                    }
+                }
+
+                return $result;
             },
-            'FLAG_ATUACAO_AUDIOVISUAL' => function($registrations) use ($opp, $app){                    
-                return 0;
+            "FLAG_ATUACAO_AUDIOVISUAL" => function ($registrations) use ($csv_config, $app){  
+                $options = $csv_config['atuacoes-culturais']['audiovisual'];
+                $temp = (array) $registrations->category;
 
+                $result = 0;
+                foreach ($options as $value) {
+                    if (in_array($value, $temp)) {
+                        $result = 1;
+                    }
+                }
+
+                return $result;
             },
-            'FLAG_ATUACAO_MUSICA' => function($registrations) use ($opp, $app){                    
-                return 0;
+            "FLAG_ATUACAO_MUSICA" => function ($registrations) use ($csv_config, $app){  
+                $options = $csv_config['atuacoes-culturais']['musica'];
+                $temp = (array) $registrations->category;
 
+                $result = 0;
+                foreach ($options as $value) {
+                    if (in_array($value, $temp)) {
+                        $result = 1;
+                    }
+                }
+
+                return $result;
             },
-            'FLAG_ATUACAO_ARTES_VISUAIS' => function($registrations) use ($opp, $app){                    
-                return 0;
+            "FLAG_ATUACAO_ARTES_VISUAIS" => function ($registrations) use ($csv_config, $app){  
+                $options = $csv_config['atuacoes-culturais']['artes-visuais'];
+                $temp = (array) $registrations->category;
 
+                $result = 0;
+                foreach ($options as $value) {
+                    if (in_array($value, $temp)) {
+                        $result = 1;
+                    }
+                }
+
+                return $result;
             },
-            'FLAG_ATUACAO_PATRIMONIO_CULTURAL' => function($registrations) use ($opp, $app){                    
-                return 0;
+            "FLAG_ATUACAO_PATRIMONIO_CULTURAL" => function ($registrations) use ($csv_config, $app){  
+                $options = $csv_config['atuacoes-culturais']['patrimonio-cultural'];
+                $temp = (array) $registrations->category;
 
+                $result = 0;
+                foreach ($options as $value) {
+                    if (in_array($value, $temp)) {
+                        $result = 1;
+                    }
+                }
+                return $result;
             },
-            'FLAG_ATUACAO_MUSEUS_MEMORIA' => function($registrations) use ($opp, $app){                    
-                return 0;
+            "FLAG_ATUACAO_MUSEUS_MEMORIA" => function ($registrations) use ($csv_config, $app){  
+                $options = $csv_config['atuacoes-culturais']['museu-memoria'];
+                $temp = (array) $registrations->category;
 
+                $result = 0;
+                foreach ($options as $value) {
+                    if (in_array($value, $temp)) {
+                        $result = 1;
+                    }
+                }
+                return $result;
             },
-            'FLAG_ATUACAO_HUMANIDADES' => function($registrations) use ($opp, $app){                    
-                return 0;
+            "FLAG_ATUACAO_HUMANIDADES" => function ($registrations) use ($csv_config, $app){  
+                $options = $csv_config['atuacoes-culturais']['humanidades'];
+                $temp = (array) $registrations->category;
 
-            }
+                $result = 0;
+                foreach ($options as $value) {
+                    if (in_array($value, $temp)) {
+                        $result = 1;
+                    }
+                }
+
+                return $result;
+            },
         ];
         
         $csv_data = [];

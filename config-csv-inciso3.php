@@ -116,7 +116,7 @@ return [
         '90' => [
             'NUMERO_INSTRUMENTO' => '90',
             'CPF' => 'field_4015',
-            'SEXO' => 'NULL',
+            'SEXO' => 2, //Workaround para falta de campo SEXO
             'CNPJ' => 'field_4014',
             'FLAG_CAD_ESTADUAL' => 1,            
             'FLAG_CAD_MUNICIPAL' => 0,            
@@ -135,7 +135,7 @@ return [
         '91' => [
             'NUMERO_INSTRUMENTO' => '91',
             'CPF' => 'field_4033',
-            'SEXO' => 'NULL',
+            'SEXO' => 2, //Workaround para falta de campo SEXO
             'CNPJ' => 'field_4034',
             'FLAG_CAD_ESTADUAL' => 1,            
             'FLAG_CAD_MUNICIPAL' => 0,            
@@ -154,7 +154,7 @@ return [
         '92' => [
             'NUMERO_INSTRUMENTO' => '92',
             'CPF' => 'field_4040',
-            'SEXO' => 'NULL',
+            'SEXO' => 2, //Workaround para falta de campo SEXO
             'CNPJ' => 'field_4041',
             'FLAG_CAD_ESTADUAL' => 1,            
             'FLAG_CAD_MUNICIPAL' => 0,            
@@ -173,7 +173,7 @@ return [
         '112' => [
             'NUMERO_INSTRUMENTO' => '112',
             'CPF' => '??',
-            'SEXO' => 'NULL',
+            'SEXO' => 2, //Workaround para falta de campo SEXO
             'CNPJ' => '??',
             'FLAG_CAD_ESTADUAL' => 1,            
             'FLAG_CAD_MUNICIPAL' => 0,            

@@ -2510,6 +2510,22 @@ class Controller extends \MapasCulturais\Controllers\Registration
         $result_aptUnfit = [];       
         foreach ($evaluation as $key_evaluetion => $value) {
             $result_validation = array_diff($value['VALIDATION'], $conf_csv['validation_reference']);
+
+            if(!empty($result_validation) && in_array('Reprocessado,', $result_validation)){
+                
+                $temp = $value['VALIDATION']['SITUACAO_CADASTRO'];
+                
+                unset($value['VALIDATION']['SITUACAO_CADASTRO']);
+
+                $result_validation = array_diff($value['VALIDATION'], $conf_csv['validation_reference']);
+
+                if(empty($result_validation)){
+                    $value['VALIDATION']['SITUACAO_CADASTRO'] =  true;
+                }else{
+                    $value['VALIDATION']['SITUACAO_CADASTRO'] = $temp;
+                }
+            }
+            
             if (!$result_validation) {
                 $result_aptUnfit[$key_evaluetion] = $value['DADOS_DO_REQUERENTE'];
                 $result_aptUnfit[$key_evaluetion]['ACCEPT'] = true;
@@ -2542,16 +2558,21 @@ class Controller extends \MapasCulturais\Controllers\Registration
         
         foreach($aprovados as $r) {
             $count++;
+
+            $registration_id = preg_replace('/[^0-9]/i', '',$r['N_INSCRICAO']);            
+            $registration = $app->repo('Registration')->findOneBy(['id' => $registration_id]);
             
-            $registration = $app->repo('Registration')->findOneBy(['number' => $r['N_INSCRICAO']]);
             if (!$registration){
                 continue;
             }
-            $registration->__skipQueuingPCacheRecreation = true;
+            $registration->__skipQueuingPCacheRecreation = true;            
             
+            $data = $registration->dataprev_raw;
+            $statusAtual = array_search($data->SITUACAO_CADASTRO, $this->statusCodeDataprev());
+
             /* @TODO: implementar atualização de status?? */
             if ($registration->dataprev_raw != (object) [] && !$this->reprocess($r)) {
-                $app->log->info("Dataprev #{$count} {$registration} APROVADA - JÁ PROCESSADA");
+                $app->log->info("Dataprev #{$count} {$registration} APROVADA - JÁ PROCESSADA O STATUS ATUAL É {$statusAtual}");
                 continue;
             }
             
@@ -2587,15 +2608,19 @@ class Controller extends \MapasCulturais\Controllers\Registration
 
         foreach($reprovados as $r) {
             $count++;
-           
-            $registration = $app->repo('Registration')->findOneBy(['number' => $r['N_INSCRICAO']]);
+
+            $registration_id = preg_replace('/[^0-9]/i', '',$r['N_INSCRICAO']);
+
+            $registration = $app->repo('Registration')->findOneBy(['id' => $registration_id]);
             if (!$registration){
                 continue;
             }
             $registration->__skipQueuingPCacheRecreation = true;
-            
+            $data = $registration->dataprev_raw;
+            $statusAtual = array_search($data->SITUACAO_CADASTRO, $this->statusCodeDataprev());
+
             if ($registration->dataprev_raw != (object) [] && !$this->reprocess($r)) {
-                $app->log->info("Dataprev #{$count} {$registration} REPROVADA - JÁ PROCESSADA");
+                $app->log->info("Dataprev #{$count} {$registration} REPROVADA - JÁ PROCESSADA O STATUS ATUAL É {$statusAtual}");
                 continue;
             }
             
@@ -2710,14 +2735,19 @@ class Controller extends \MapasCulturais\Controllers\Registration
         //Inicia a verificação dos dados do requerente
         $evaluation = [];
         $parameters = $conf_csv['acceptance_parameters'];
-        $register = $conf_csv['RegisterNumber'];
+        $registers = $conf_csv['typeRegisters'];
         
         $registrat_ids = [];        
-
+        
         foreach ($results as $results_key => $item) {
-            
-            $registrat_ids[] = $item[$register];
+            foreach($registers as $register){
+                if($item[$register]){
+                    $registrat_ids[] = $item[$register];
+                    break;
+                }
+            }
         }       
+        
         
         $dql = "
         SELECT
@@ -2742,10 +2772,18 @@ class Controller extends \MapasCulturais\Controllers\Registration
        
         $raw_data_by_num = [];
         // return;
-        foreach ($results as $results_key => $result) {
+        foreach ($results as $results_key => $result) {            
+          
+            foreach($registers as $register){                 
+                if($result[$register]){
+                    $reg = preg_replace('/[^0-9]/i', '',$result[$register]);
+                    $registration = $app->repo('Registration')->findOneBy(['id' => $reg]);
+                    $raw_data_by_num[$registration->number] = $result;
+                    $fieldCadCultural = $register;
+                    break;
+                }
+            }
             
-            $raw_data_by_num[$result[$register]] = $result;
-
             $candidate = $result;
             foreach ($candidate as $key_candidate => $value) {                
                 
@@ -2753,7 +2791,7 @@ class Controller extends \MapasCulturais\Controllers\Registration
                     $evaluation[$results_key]['DADOS_DO_REQUERENTE']['SITUACAO_CADASTRO'] = $value;
                 }
                 
-                if ($key_candidate == $conf_csv['RegisterNumber']) {
+                if ($key_candidate == $fieldCadCultural) {
                     $evaluation[$results_key]['DADOS_DO_REQUERENTE']['N_INSCRICAO'] = $value;
                 }
 
@@ -2819,6 +2857,22 @@ class Controller extends \MapasCulturais\Controllers\Registration
         $result_aptUnfit = [];       
         foreach ($evaluation as $key_evaluetion => $value) {
             $result_validation = array_diff($value['VALIDATION'], $conf_csv['validation_reference']);
+
+            if(!empty($result_validation) && in_array('Reprocessado,', $result_validation)){
+                
+                $temp = $value['VALIDATION']['SITUACAO_CADASTRO'];
+                
+                unset($value['VALIDATION']['SITUACAO_CADASTRO']);
+
+                $result_validation = array_diff($value['VALIDATION'], $conf_csv['validation_reference']);
+
+                if(empty($result_validation)){
+                    $value['VALIDATION']['SITUACAO_CADASTRO'] =  true;
+                }else{
+                    $value['VALIDATION']['SITUACAO_CADASTRO'] = $temp;
+                }
+            }
+
             if (!$result_validation) {
                 $result_aptUnfit[$key_evaluetion] = $value['DADOS_DO_REQUERENTE'];
                 $result_aptUnfit[$key_evaluetion]['ACCEPT'] = true;
@@ -2846,24 +2900,34 @@ class Controller extends \MapasCulturais\Controllers\Registration
                 return $item;
             }
         }));
-
+        
         $app->disableAccessControl();
         $count = 0;
         
         foreach($aprovados as $r) {
             $count++;
             
-            $registration = $app->repo('Registration')->findOneBy(['number' => $r['N_INSCRICAO']]);
+            $registration_id = preg_replace('/[^0-9]/i', '',$r['N_INSCRICAO']);            
+            $registration = $app->repo('Registration')->findOneBy(['id' => $registration_id]);
+
             if (!$registration){
                 continue;
             }
+
             $registration->__skipQueuingPCacheRecreation = true;
             
-            /* @TODO: implementar atualização de status?? */            
+            $statusAtual = "";
+            $data = $registration->dataprev_raw;
+            if((array) $data){
+                $statusAtual = array_search($data->SITUACAO_CADASTRO, $this->statusCodeDataprev());
+                
+            }
+
+            /* @TODO: implementar atualização de status?? */ 
             if ($registration->dataprev_raw != (object) [] && !$this->reprocess($r)) {
-                $app->log->info("Dataprev #{$count} {$registration} APROVADA - JÁ PROCESSADA");
-                continue;               
-            }            
+                $app->log->info("Dataprev #{$count} {$registration} APROVADA - JÁ PROCESSADA O STATUS ATUAL É {$statusAtual}");
+                continue;
+            }      
             
             $app->log->info("Dataprev #{$count} {$registration} APROVADA");
             
@@ -2894,18 +2958,23 @@ class Controller extends \MapasCulturais\Controllers\Registration
         foreach($reprovados as $r) {
             $count++;           
            
-            $registration = $app->repo('Registration')->findOneBy(['number' => $r['N_INSCRICAO']]);
+            $registration_id = preg_replace('/[^0-9]/i', '',$r['N_INSCRICAO']);            
+            $registration = $app->repo('Registration')->findOneBy(['id' => $registration_id]);
+
             if (!$registration){
                 continue;
             }
             $registration->__skipQueuingPCacheRecreation = true;
             
            
+            $data = $registration->dataprev_raw;
+            $statusAtual = array_search($data->SITUACAO_CADASTRO, $this->statusCodeDataprev());
+
             if ($registration->dataprev_raw != (object) [] && !$this->reprocess($r)) {
-                $app->log->info("Dataprev #{$count} {$registration} REPROVADA - JÁ PROCESSADA");
+                $app->log->info("Dataprev #{$count} {$registration} REPROVADA - JÁ PROCESSADA O STATUS ATUAL É {$statusAtual}");
                 continue;
-                
-            }            
+            }
+                       
             $app->log->info("Dataprev #{$count} {$registration} REPROVADA");
 
             $registration->dataprev_raw = $raw_data_by_num[$registration->number];
@@ -2955,12 +3024,29 @@ class Controller extends \MapasCulturais\Controllers\Registration
     }
 
     /**
+     * Relação de status DEataprev
+     */
+    private function statusCodeDataprev(){
+        return [
+            'NAO PROCESSADO' => 1,
+            'PROCESSADO' => 2,
+            'AGUARDANDO PROCESSAMENTO' => 3,
+            'REPROCESSADO' => 4,
+            'CANCELADO' => 5,
+            'PAGAMENTO CONFIRMADO' => 6,
+            'PRESTACAO DE CONTAS CONFIRMADA' => 7,
+            'RETIDO PARA AVALIACAO' => 8
+        ];
+    }
+
+    /**
      * Faz as analises reprocessamento ao importar o retorno do Dataprev
      */
     private function reprocess($r){        
         $app = App::i();
         $user = $app->plugins['AldirBlancDataprev']->getUser();
-        $registration = $app->repo('Registration')->findOneBy(['number' => $r['N_INSCRICAO']]);        
+        $registration_id = preg_replace('/[^0-9]/i', '',$r['N_INSCRICAO']); 
+        $registration = $app->repo('Registration')->findOneBy(['id' => $registration_id]);        
 
         $metaDado = $registration->getMetadata();
         $data = json_decode($metaDado['dataprev_raw']);
@@ -2979,6 +3065,14 @@ class Controller extends \MapasCulturais\Controllers\Registration
             return true;
         }
         
+        /**
+         * Analisa se deve existir reprocessamento da inscrição caso em um segundo momento a mesma venha com status (2-“Processado”, 5-“Cancelado”, 4-“Reprocessado”)
+         */
+        if((in_array($r['SITUACAO_CADASTRO'], [2, 5,4]))){
+            $app->log->info($r['N_INSCRICAO'] . " SERÁ REPROCESSADA");            
+            return true;
+        }
+
         return false;
     }
 
